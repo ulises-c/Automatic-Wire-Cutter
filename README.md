@@ -3,7 +3,7 @@
  - A semester long project for SJSU's ME106, Fundamentals of Mechatronics, class.
 
 ## The team behind the project
-Everyone is a member of Spartan Racing
-- Ulises Chavarria
-- Josue Garcia
-- Francis Supnet
+Spartan Racing
+- [Ulises Chavarria](https://www.linkedin.com/in/ulises-chavarria/)
+- [Josue Garcia](https://www.linkedin.com/in/josue-garcia/)
+- [Francis Supnet](https://www.linkedin.com/in/francis-supnet/)
