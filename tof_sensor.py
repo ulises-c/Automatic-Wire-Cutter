@@ -1,3 +1,8 @@
+"""
+Initially found a ToF sensor github repository then modified it to fit the needs of the Advanced Wire Cutter project
+Original code found here - https://github.com/kevinmcaleer/vl53l0x
+"""
+
 import time
 from machine import Pin, I2C
 from vl53l0x_v1 import VL53L0X
