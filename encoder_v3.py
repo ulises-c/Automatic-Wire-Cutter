@@ -1,3 +1,9 @@
+"""
+Modified code from one of the ME-106 labs
+Originally used an encoder to determine when the amount of wire satisfied the length indicated
+Later on encoder portion was discarded due to a faulty encoder
+"""
+
 from machine import Pin
 from time    import sleep
 import math

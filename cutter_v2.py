@@ -1,3 +1,7 @@
+"""
+Modified code from one of the ME-106 labs
+"""
+
 from machine import Pin, ADC
 # import machine
 import time
