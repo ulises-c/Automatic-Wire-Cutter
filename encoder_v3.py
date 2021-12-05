@@ -69,4 +69,5 @@ def main(cut_len):
     #     check_count()
     steps(steps2do)
     print("Done feeding wire")
+    print('Cutting {}" of wire'.format(cut_len))
     return 1
