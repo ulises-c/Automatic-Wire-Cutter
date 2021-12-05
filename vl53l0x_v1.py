@@ -1,3 +1,11 @@
+"""
+Open source code found on github
+https://github.com/kevinmcaleer/vl53l0x
+
+Library used to operate the Time of Flight sensor
+"""
+
+
 from micropython import const
 import ustruct
 import utime
