@@ -17,11 +17,6 @@ import cutter_v2
 import tof_sensor
 from pico_lcd import BL, LCD_1inch14
 
-stage = 0
-stage_titles = ["Boot up stage", "User input stage", "Data confirmation stage", "ToF check stage", "Activating motor stage (display)", "Activating motor stage", "Wire cutting stage (display)", "Wire cutting stage", "Done"]
-MAX_STAGE = len(stage_titles) - 1 # 9, but index starts at 0, so modify to 8
-stage5_flash = True
-
 def change_index(list, index, positive):
     if(stage != 1):
         return index
@@ -199,6 +194,29 @@ def display_index():
             y = 95
         LCD.rect(x, y, 23, 18, LCD.blue)
 
+def default_values():
+    global length_arr, amount, list_index, length_float, display_wait, wire_inside, check_tof
+    length_arr = [0, 0, 0, 1]
+    amount = length_arr[3]
+    list_index = 0
+    length_float = list2float(length_arr)
+    display_wait = 3
+    wire_inside = False
+    check_tof = True
+
+stage = 0
+stage_titles = ["Boot up stage", "User input stage", "Data confirmation stage", "ToF check stage", "Activating motor stage (display)", "Activating motor stage", "Wire cutting stage (display)", "Wire cutting stage", "Done"]
+MAX_STAGE = len(stage_titles) - 1 # 9, but index starts at 0, so modify to 8
+stage5_flash = True
+length_arr = [0, 0, 0, 1]
+amount = length_arr[3]
+list_index = 0
+length_float = list2float(length_arr)
+stage = stage_modify(stage, 0)
+display_wait = 3
+wire_inside = False
+check_tof = True
+
 if __name__=='__main__':
     pwm = PWM(Pin(BL))
     pwm.freq(1000)
@@ -214,15 +232,7 @@ if __name__=='__main__':
     key5 = Pin(18, Pin.IN, Pin.PULL_UP) # DOWN
     key6 = Pin(20, Pin.IN, Pin.PULL_UP) # RIGHT
 
-    # DEFAULT VALUES
-    length_arr = [0, 0, 0, 1]
-    amount = length_arr[3]
-    list_index = 0
-    length_float = list2float(length_arr)
-    stage = stage_modify(stage, 0)
-    display_wait = 3
-    wire_inside = False
-    check_tof = True
+    default_values()
 
     while(True):
         LCD.fill(LCD.white)
@@ -272,7 +282,7 @@ if __name__=='__main__':
             if(display_wait > 0):
                 display_wait -= 1
             elif(display_wait <= 0):
-                display_wait = 10
+                display_wait = 3
                 stage = stage_modify(stage, 1)
             pass
 
@@ -307,7 +317,8 @@ if __name__=='__main__':
                 stage = stage_modify(stage, 0)
         
         elif(stage == 8):
-            # Done stage. Wires have been cut.
+            # Done stage. Wires have been cut. Reset values
+            default_values()
             pass
             
         else:
