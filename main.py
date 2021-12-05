@@ -1,171 +1,28 @@
-# Pico LCD 1.14
-# https://www.waveshare.com/wiki/Pico-LCD-1.14
+"""
+Fall 2021, ME 106, SJSU
+Spartan Racing
 
-# OUTDATED DO NOT USE
+Automatic Wire Cutter by:
+    Ulises Chavarria
+    Josue Garcia
+    Francis Supnet
+"""
+# main.py
 
-from machine import Pin,SPI,PWM
-import framebuf
+# Main script used throughout project
+# Imports other helper scripts
+
+from machine import Pin,PWM
 import time
-import sys
+
 # project files
 import encoder_v3
 import cutter_v2
 import tof_sensor
-
-BL = 13
-DC = 8
-RST = 12
-MOSI = 11
-SCK = 10
-CS = 9
-
-stage = 0
-stage_titles = ["Boot up stage", "User input stage", "Data confirmation stage", "ToF check stage", "Activating motor stage (display)", "Activating motor stage", "Wire cutting stage (display)", "Wire cutting stage", "Done", "Actually done"]
-MAX_STAGE = 8
-stage5_flash = True
-
-class LCD_1inch14(framebuf.FrameBuffer):
-    def __init__(self):
-        self.width = 240
-        self.height = 135
-        
-        self.cs = Pin(CS,Pin.OUT)
-        self.rst = Pin(RST,Pin.OUT)
-        
-        self.cs(1)
-        self.spi = SPI(1)
-        self.spi = SPI(1,1000_000)
-        self.spi = SPI(1,10000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
-        self.dc = Pin(DC,Pin.OUT)
-        self.dc(1)
-        self.buffer = bytearray(self.height * self.width * 2)
-        super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
-        self.init_display()
-        
-        self.red   =   0x07E0
-        self.green =   0x001f
-        self.blue  =   0xf800
-        self.white =   0xffff
-        self.black =   0x0000
-        
-    def write_cmd(self, cmd):
-        self.cs(1)
-        self.dc(0)
-        self.cs(0)
-        self.spi.write(bytearray([cmd]))
-        self.cs(1)
-
-    def write_data(self, buf):
-        self.cs(1)
-        self.dc(1)
-        self.cs(0)
-        self.spi.write(bytearray([buf]))
-        self.cs(1)
-
-    def init_display(self):
-        """Initialize display"""  
-        self.rst(1)
-        self.rst(0)
-        self.rst(1)
-        
-        self.write_cmd(0x36)
-        self.write_data(0x70)
-
-        self.write_cmd(0x3A) 
-        self.write_data(0x05)
-
-        self.write_cmd(0xB2)
-        self.write_data(0x0C)
-        self.write_data(0x0C)
-        self.write_data(0x00)
-        self.write_data(0x33)
-        self.write_data(0x33)
-
-        self.write_cmd(0xB7)
-        self.write_data(0x35) 
-
-        self.write_cmd(0xBB)
-        self.write_data(0x19)
-
-        self.write_cmd(0xC0)
-        self.write_data(0x2C)
-
-        self.write_cmd(0xC2)
-        self.write_data(0x01)
-
-        self.write_cmd(0xC3)
-        self.write_data(0x12)   
-
-        self.write_cmd(0xC4)
-        self.write_data(0x20)
-
-        self.write_cmd(0xC6)
-        self.write_data(0x0F) 
-
-        self.write_cmd(0xD0)
-        self.write_data(0xA4)
-        self.write_data(0xA1)
-
-        self.write_cmd(0xE0)
-        self.write_data(0xD0)
-        self.write_data(0x04)
-        self.write_data(0x0D)
-        self.write_data(0x11)
-        self.write_data(0x13)
-        self.write_data(0x2B)
-        self.write_data(0x3F)
-        self.write_data(0x54)
-        self.write_data(0x4C)
-        self.write_data(0x18)
-        self.write_data(0x0D)
-        self.write_data(0x0B)
-        self.write_data(0x1F)
-        self.write_data(0x23)
-
-        self.write_cmd(0xE1)
-        self.write_data(0xD0)
-        self.write_data(0x04)
-        self.write_data(0x0C)
-        self.write_data(0x11)
-        self.write_data(0x13)
-        self.write_data(0x2C)
-        self.write_data(0x3F)
-        self.write_data(0x44)
-        self.write_data(0x51)
-        self.write_data(0x2F)
-        self.write_data(0x1F)
-        self.write_data(0x1F)
-        self.write_data(0x20)
-        self.write_data(0x23)
-        
-        self.write_cmd(0x21)
-
-        self.write_cmd(0x11)
-
-        self.write_cmd(0x29)
-
-    def show(self):
-        self.write_cmd(0x2A)
-        self.write_data(0x00)
-        self.write_data(0x28)
-        self.write_data(0x01)
-        self.write_data(0x17)
-        
-        self.write_cmd(0x2B)
-        self.write_data(0x00)
-        self.write_data(0x35)
-        self.write_data(0x00)
-        self.write_data(0xBB)
-        
-        self.write_cmd(0x2C)
-        
-        self.cs(1)
-        self.dc(1)
-        self.cs(0)
-        self.spi.write(self.buffer)
-        self.cs(1)
+from pico_lcd import BL, LCD_1inch14
 
 def change_index(list, index, positive):
+    # A helper function that allows the user to modify the length of wire and amount of wire. Works in tangent with modify_value()
     if(stage != 1):
         return index
     if(positive == True):
@@ -180,6 +37,7 @@ def change_index(list, index, positive):
     return index
 
 def stage_modify(stage, num):
+    # A helper function that changes stages after certain processes such as a button press
     # print("Stage mod num = {}".format(num))
     if(num == 0):
         return stage
@@ -192,6 +50,7 @@ def stage_modify(stage, num):
     return stage
 
 def modify_value(list, index, positive):
+    # A helper function that keeps integer values from 0-9
     if(stage != 1):
         return
     if(positive == True):
@@ -204,13 +63,8 @@ def modify_value(list, index, positive):
     elif(list[index] > 9):
         list[index] = 0
 
-def list2string(list):
-    num_str = ''
-    for num in list:
-        num_str += str(num)
-    return num_str
-
 def list2float(list):
+    # Converts the first 3 elements of a list into a float such as [3,4,7] -> 34.7
     number = 0
     number += list[0] * 10
     number += list[1]
@@ -218,15 +72,14 @@ def list2float(list):
     return number
 
 def display_blue_box():
+    # A function that displays a blue outline on the Pico LCD, part of the GUI
     LCD.hline(5,5,230,LCD.blue)
     LCD.hline(5,130,230,LCD.blue)
     LCD.vline(5,5,125,LCD.blue)
     LCD.vline(235,5,125,LCD.blue)
 
-def display_defaults():
-    pass
-
 def button_press(length_arr, amount, list_index, stage):
+    # An important function that programs the buttons on the Pico LCD
     if(keyA.value() == 0): # A
         LCD.fill_rect(208,12,20,20,LCD.red)
         stage = stage_modify(stage, 1)
@@ -279,6 +132,7 @@ def button_press(length_arr, amount, list_index, stage):
     return length_arr, amount, list_index, stage
 
 def display_text(stage):
+    # An important function that displays the GUI on the Pico LCD
     if(stage == 0):
         # LCD = LCD_1inch14()
         #color BRG
@@ -336,6 +190,7 @@ def display_text(stage):
         LCD.rect(208,12,20,20,LCD.red)
         
 def display_index():
+    # A helper function to create a visual indication during the data acquisition stage
     x = 140
     y = 55
     if(stage == 1):
@@ -351,13 +206,38 @@ def display_index():
             y = 95
         LCD.rect(x, y, 23, 18, LCD.blue)
 
+def default_values():
+    # Used after completing a full cycle to reset all values to default
+    global length_arr, amount, list_index, length_float, display_wait, wire_inside, check_tof
+    length_arr = [0, 0, 0, 1]
+    amount = length_arr[3]
+    list_index = 0
+    length_float = list2float(length_arr)
+    display_wait = 3
+    wire_inside = False
+    check_tof = True
+
+stage = 0
+stage_titles = ["Boot up stage", "User input stage", "Data confirmation stage", "ToF check stage", "Activating motor stage (display)", "Activating motor stage", "Wire cutting stage (display)", "Wire cutting stage", "Done"]
+MAX_STAGE = len(stage_titles) - 1 # 9, but index starts at 0, so modify to 8
+stage5_flash = True
+length_arr = [0, 0, 0, 1]
+amount = length_arr[3]
+list_index = 0
+length_float = list2float(length_arr)
+stage = stage_modify(stage, 0)
+display_wait = 3
+wire_inside = False
+check_tof = True
+
 if __name__=='__main__':
+    # Essentially the main function of the program.
+    # Drives the most important level of logic throughout the program and calls the helper functions
     pwm = PWM(Pin(BL))
     pwm.freq(1000)
     pwm.duty_u16(32768) # max 65535
 
     LCD = LCD_1inch14()
-    # display_initial()
 
     keyA = Pin(15, Pin.IN, Pin.PULL_UP) # A
     keyB = Pin(17, Pin.IN, Pin.PULL_UP) # B
@@ -367,18 +247,11 @@ if __name__=='__main__':
     key5 = Pin(18, Pin.IN, Pin.PULL_UP) # DOWN
     key6 = Pin(20, Pin.IN, Pin.PULL_UP) # RIGHT
 
-    # DEFAULT VALUES
-    length_arr = [0, 0, 0, 1]
-    amount = length_arr[3]
-    list_index = 0
-    length_float = list2float(length_arr)
-    display_wait = 5
-    stage = stage_modify(stage, 0)
-    wire_inside = False
-    check_tof = True
+    default_values()
 
     while(True):
         LCD.fill(LCD.white)
+        # Erases portions of the LCD each cycle
         LCD.rect(84, 35, 145, 60, LCD.white)
         LCD.fill_rect(84, 35, 145, 60, LCD.white)
         LCD.fill_rect(150, 95, 23, 18, LCD.white)
@@ -389,16 +262,12 @@ if __name__=='__main__':
         LCD.show
 
         if(stage == 0):
+            # Home screen stage
             pass
 
         elif(stage == 1):
             # User input stage
             pass
-
-        # if(amount < 1 and stage == 4):
-        #     print("Cut amount was less than 1")
-        #     # stage = 1
-        #     pass
 
         elif(stage == 2):
             # User confirmation stage
@@ -428,7 +297,7 @@ if __name__=='__main__':
             if(display_wait > 0):
                 display_wait -= 1
             elif(display_wait <= 0):
-                display_wait = 10
+                display_wait = 3
                 stage = stage_modify(stage, 1)
             pass
 
@@ -442,8 +311,7 @@ if __name__=='__main__':
             if(display_wait > 0):
                 display_wait -= 1
             elif(display_wait <= 0):
-                display_wait = 10
-                # stage += 1
+                display_wait = 3
                 stage = stage_modify(stage, 1)
             pass
 
@@ -464,14 +332,14 @@ if __name__=='__main__':
                 stage = stage_modify(stage, 0)
         
         elif(stage == 8):
-            # Done stage
+            # Done stage. Wires have been cut. Reset values
+            default_values()
             pass
             
         else:
-            print("Stage changed.\nNothing in this stage yet\nExiting...")
-            # sys.exit()
-            stage = 1
+            # Some sort of error happened to reach this point
+            print("Entered else conditional for stages.")
+            stage = 0
 
         LCD.show()
         time.sleep(0.1)
-    # return amount, length_float

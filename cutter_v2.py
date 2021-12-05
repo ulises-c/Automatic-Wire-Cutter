@@ -1,6 +1,7 @@
 """
 Modified code from one of the ME-106 labs
 """
+# cutter_v2.py
 
 from machine import Pin, ADC
 # import machine

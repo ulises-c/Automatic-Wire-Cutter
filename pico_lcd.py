@@ -2,7 +2,7 @@
 Modified demo code from the Pi Pico LCD 1.14
 Original code from - https://www.waveshare.com/wiki/Pico-LCD-1.14#Download_Demo_codes
 """
-
+# pico_lcd.py
 
 # Pico LCD 1.14
 # https://www.waveshare.com/wiki/Pico-LCD-1.14
