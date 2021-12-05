@@ -1,6 +1,8 @@
 # Pico LCD 1.14
 # https://www.waveshare.com/wiki/Pico-LCD-1.14
 
+# OUTDATED DO NOT USE
+
 from machine import Pin,SPI,PWM
 import framebuf
 import time

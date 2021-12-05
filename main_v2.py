@@ -8,6 +8,9 @@ Automatic Wire Cutter by:
     Francis Supnet
 """
 
+# Main script used throughout project
+# Imports other helper scripts
+
 from machine import Pin,PWM
 import time
 
@@ -18,6 +21,7 @@ import tof_sensor
 from pico_lcd import BL, LCD_1inch14
 
 def change_index(list, index, positive):
+    # A helper function that allows the user to modify the length of wire and amount of wire. Works in tangent with modify_value()
     if(stage != 1):
         return index
     if(positive == True):
@@ -32,6 +36,7 @@ def change_index(list, index, positive):
     return index
 
 def stage_modify(stage, num):
+    # A helper function that changes stages after certain processes such as a button press
     # print("Stage mod num = {}".format(num))
     if(num == 0):
         return stage
@@ -44,6 +49,7 @@ def stage_modify(stage, num):
     return stage
 
 def modify_value(list, index, positive):
+    # A helper function that keeps integer values from 0-9
     if(stage != 1):
         return
     if(positive == True):
@@ -57,6 +63,7 @@ def modify_value(list, index, positive):
         list[index] = 0
 
 def list2float(list):
+    # Converts the first 3 elements of a list into a float such as [3,4,7] -> 34.7
     number = 0
     number += list[0] * 10
     number += list[1]
@@ -64,12 +71,14 @@ def list2float(list):
     return number
 
 def display_blue_box():
+    # A function that displays a blue outline on the Pico LCD, part of the GUI
     LCD.hline(5,5,230,LCD.blue)
     LCD.hline(5,130,230,LCD.blue)
     LCD.vline(5,5,125,LCD.blue)
     LCD.vline(235,5,125,LCD.blue)
 
 def button_press(length_arr, amount, list_index, stage):
+    # An important function that programs the buttons on the Pico LCD
     if(keyA.value() == 0): # A
         LCD.fill_rect(208,12,20,20,LCD.red)
         stage = stage_modify(stage, 1)
@@ -122,6 +131,7 @@ def button_press(length_arr, amount, list_index, stage):
     return length_arr, amount, list_index, stage
 
 def display_text(stage):
+    # An important function that displays the GUI on the Pico LCD
     if(stage == 0):
         # LCD = LCD_1inch14()
         #color BRG
@@ -179,6 +189,7 @@ def display_text(stage):
         LCD.rect(208,12,20,20,LCD.red)
         
 def display_index():
+    # A helper function to create a visual indication during the data acquisition stage
     x = 140
     y = 55
     if(stage == 1):
@@ -195,6 +206,7 @@ def display_index():
         LCD.rect(x, y, 23, 18, LCD.blue)
 
 def default_values():
+    # Used after completing a full cycle to reset all values to default
     global length_arr, amount, list_index, length_float, display_wait, wire_inside, check_tof
     length_arr = [0, 0, 0, 1]
     amount = length_arr[3]
@@ -218,6 +230,8 @@ wire_inside = False
 check_tof = True
 
 if __name__=='__main__':
+    # Essentially the main function of the program.
+    # Drives the most important level of logic throughout the program and calls the helper functions
     pwm = PWM(Pin(BL))
     pwm.freq(1000)
     pwm.duty_u16(32768) # max 65535
