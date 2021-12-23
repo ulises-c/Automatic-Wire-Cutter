@@ -1,6 +1,6 @@
 # Automatic Wire Cutter
 ## About the project
- - A semester long project for SJSU's ME106, Fundamentals of Mechatronics, class.
+ - A semester long project for ME106, Fundamentals of Mechatronics, at San Jose State University.
 
 ## The team behind the project
 [Spartan Racing](https://www.linkedin.com/school/sjsufsae/) & [Spartan Racing Electric](https://www.linkedin.com/company/spartan-racing-electric/)
