@@ -8,6 +8,6 @@
 - [Josue Garcia](https://www.linkedin.com/in/josue-garcia/) - Electronics Lead
 - [Francis Supnet](https://www.linkedin.com/in/francis-supnet/) - Mechanical Lead
 
-# Videos
+## Videos
 - A short demo - https://www.youtube.com/watch?v=9NNSo1pd07s
 - Project video - https://www.youtube.com/watch?v=_0UHTZcK1gQ
